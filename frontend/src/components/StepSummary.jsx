@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useMutation } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { createOrder } from "../lib/api";
 import useOrderStore from "../store/useOrderStore";
 import useLanguageStore from "../store/useLanguageStore";
@@ -13,7 +14,8 @@ const pageVariants = {
 
 export default function StepSummary() {
   const { t, lang } = useLanguageStore();
-  const { subscriptionType, plan, meals, getTotals, prevStep, reset, getSlotConfig } =
+  const navigate = useNavigate();
+  const { subscriptionType, plan, meals, getTotals, reset, getSlotConfig } =
     useOrderStore();
   const [orderId, setOrderId] = useState(null);
 
@@ -65,7 +67,7 @@ export default function StepSummary() {
           <span className="font-mono text-white">{orderId.slice(0, 8)}</span>
         </p>
         <button
-          onClick={reset}
+          onClick={() => { reset(); navigate("/"); }}
           className="px-8 py-3 rounded-xl bg-brand hover:bg-brand-dark text-black font-bold transition-colors"
         >
           {t.newOrder}
@@ -147,7 +149,7 @@ export default function StepSummary() {
         {/* Actions */}
         <div className="flex gap-4 justify-center pb-10">
           <button
-            onClick={prevStep}
+            onClick={() => navigate("/order/week")}
             className="px-6 py-3 rounded-xl bg-surface-700 hover:bg-surface-600 text-sm font-semibold transition-colors"
           >
             {t.back}

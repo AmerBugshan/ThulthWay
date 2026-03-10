@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { fetchSubscriptions } from "../lib/api";
 import useOrderStore from "../store/useOrderStore";
 import useLanguageStore from "../store/useLanguageStore";
@@ -18,7 +19,8 @@ const icons = {
 
 export default function StepSubscription() {
   const { t, lang } = useLanguageStore();
-  const { setSubscription, nextStep, subscriptionType } = useOrderStore();
+  const navigate = useNavigate();
+  const { setSubscription, subscriptionType } = useOrderStore();
 
   const { data: subscriptions, isLoading, error } = useQuery({
     queryKey: ["subscriptions"],
@@ -30,7 +32,7 @@ export default function StepSubscription() {
 
   const handleSelect = (sub) => {
     setSubscription(sub);
-    nextStep();
+    navigate("/order/plan");
   };
 
   return (

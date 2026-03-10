@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { fetchMeals } from "../lib/api";
 import useOrderStore from "../store/useOrderStore";
 import useLanguageStore from "../store/useLanguageStore";
@@ -25,7 +26,8 @@ const categoryEmojis = {
 
 export default function StepWeek() {
   const { t, lang } = useLanguageStore();
-  const { plan, meals, setMeal, removeMeal, prevStep, nextStep, getTotals, getSlotConfig } =
+  const navigate = useNavigate();
+  const { plan, meals, setMeal, removeMeal, getTotals, getSlotConfig } =
     useOrderStore();
   const [modal, setModal] = useState(null); // { day, slot, type }
 
@@ -138,13 +140,13 @@ export default function StepWeek() {
           </div>
           <div className="flex gap-3">
             <button
-              onClick={prevStep}
+              onClick={() => navigate("/order/plan")}
               className="px-5 py-2 rounded-xl bg-surface-600 hover:bg-surface-500 text-sm font-semibold transition-colors"
             >
               {t.back}
             </button>
             <button
-              onClick={nextStep}
+              onClick={() => navigate("/order/summary")}
               disabled={!canProceed()}
               className={`px-5 py-2 rounded-xl text-sm font-bold transition-colors ${
                 canProceed()

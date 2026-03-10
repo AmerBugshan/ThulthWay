@@ -1,16 +1,11 @@
 import { create } from "zustand";
 
 const useOrderStore = create((set, get) => ({
-  step: 1,
   subscriptionType: null,
   plan: null,
   // meals[day][slot] = meal object or null
   // day: 0-4 (Sun-Thu), slot: 0-2 (breakfast, main1, main2)
   meals: Array.from({ length: 5 }, () => Array(3).fill(null)),
-
-  setStep: (step) => set({ step }),
-  nextStep: () => set((s) => ({ step: Math.min(s.step + 1, 4) })),
-  prevStep: () => set((s) => ({ step: Math.max(s.step - 1, 1) })),
 
   setSubscription: (sub) => set({ subscriptionType: sub }),
   setPlan: (plan) => set({ plan }),
@@ -61,7 +56,6 @@ const useOrderStore = create((set, get) => ({
 
   reset: () =>
     set({
-      step: 1,
       subscriptionType: null,
       plan: null,
       meals: Array.from({ length: 5 }, () => Array(3).fill(null)),

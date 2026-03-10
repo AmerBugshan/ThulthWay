@@ -1,10 +1,17 @@
-import useOrderStore from "../store/useOrderStore";
+import { useLocation } from "react-router-dom";
 import useLanguageStore from "../store/useLanguageStore";
 
 const stepKeys = ["step1Title", "step2Title", "step3Title", "step4Title"];
+const pathToStep = {
+  "/order/subscription": 1,
+  "/order/plan": 2,
+  "/order/week": 3,
+  "/order/summary": 4,
+};
 
 export default function ProgressBar() {
-  const step = useOrderStore((s) => s.step);
+  const location = useLocation();
+  const step = pathToStep[location.pathname] || 1;
   const { t } = useLanguageStore();
 
   return (

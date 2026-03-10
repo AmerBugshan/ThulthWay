@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import useOrderStore from "../store/useOrderStore";
 import useLanguageStore from "../store/useLanguageStore";
 
@@ -18,7 +19,8 @@ const planIcons = {
 
 export default function StepPlan() {
   const { t, lang } = useLanguageStore();
-  const { subscriptionType, setPlan, nextStep, prevStep, plan: selectedPlan } = useOrderStore();
+  const navigate = useNavigate();
+  const { subscriptionType, setPlan, plan: selectedPlan } = useOrderStore();
 
   if (!subscriptionType) return null;
 
@@ -26,7 +28,7 @@ export default function StepPlan() {
 
   const handleSelect = (plan) => {
     setPlan(plan);
-    nextStep();
+    navigate("/order/week");
   };
 
   return (
@@ -69,7 +71,7 @@ export default function StepPlan() {
 
       <div className="flex justify-center mt-10">
         <button
-          onClick={prevStep}
+          onClick={() => navigate("/order/subscription")}
           className="px-6 py-2.5 rounded-xl bg-surface-700 hover:bg-surface-600 text-sm font-semibold transition-colors"
         >
           {t.back}

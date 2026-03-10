@@ -1,16 +1,16 @@
 import { useEffect } from "react";
-import { AnimatePresence } from "framer-motion";
+import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
-import ProgressBar from "./components/ProgressBar";
+import ProtectedRoute from "./components/ProtectedRoute";
+import LandingPage from "./pages/LandingPage";
+import OrderLayout from "./pages/OrderLayout";
 import StepSubscription from "./components/StepSubscription";
 import StepPlan from "./components/StepPlan";
 import StepWeek from "./components/StepWeek";
 import StepSummary from "./components/StepSummary";
-import useOrderStore from "./store/useOrderStore";
 import useLanguageStore from "./store/useLanguageStore";
 
 export default function App() {
-  const step = useOrderStore((s) => s.step);
   const { lang, isRtl } = useLanguageStore();
 
   useEffect(() => {
@@ -23,15 +23,36 @@ export default function App() {
   return (
     <div className={`min-h-screen bg-surface-900 ${fontClass}`}>
       <Navbar />
-      <main className="max-w-6xl mx-auto px-4 pb-32">
-        <ProgressBar />
-        <AnimatePresence mode="wait">
-          {step === 1 && <StepSubscription key="step1" />}
-          {step === 2 && <StepPlan key="step2" />}
-          {step === 3 && <StepWeek key="step3" />}
-          {step === 4 && <StepSummary key="step4" />}
-        </AnimatePresence>
-      </main>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/order" element={<OrderLayout />}>
+          <Route path="subscription" element={<StepSubscription />} />
+          <Route
+            path="plan"
+            element={
+              <ProtectedRoute step="plan">
+                <StepPlan />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="week"
+            element={
+              <ProtectedRoute step="week">
+                <StepWeek />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="summary"
+            element={
+              <ProtectedRoute step="summary">
+                <StepSummary />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
+      </Routes>
     </div>
   );
 }
