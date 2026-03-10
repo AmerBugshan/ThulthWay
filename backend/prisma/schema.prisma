@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum MealType {
+  BREAKFAST
+  MAIN
+}
+
+model SubscriptionType {
+  id      String @id @default(uuid())
+  nameEn  String @map("name_en")
+  nameAr  String @map("name_ar")
+  slug    String @unique
+  plans   Plan[]
+  orders  Order[]
+
+  @@map("subscription_types")
+}
+
+model Plan {
+  id                 String           @id @default(uuid())
+  nameEn             String           @map("name_en")
+  nameAr             String           @map("name_ar")
+  slug               String
+  price              Int
+  breakfastSlots     Int              @default(0) @map("breakfast_slots")
+  mainSlots          Int              @default(0) @map("main_slots")
+  subscriptionTypeId String           @map("subscription_type_id")
+  subscriptionType   SubscriptionType @relation(fields: [subscriptionTypeId], references: [id])
+  orders             Order[]
+
+  @@unique([subscriptionTypeId, slug])
+  @@map("plans")
+}
+
+model FoodCategory {
+  id     String @id @default(uuid())
+  nameEn String @map("name_en")
+  nameAr String @map("name_ar")
+  slug   String @unique
+  meals  Meal[]
+
+  @@map("food_categories")
+}
+
+model Meal {
+  id         String        @id @default(uuid())
+  slug       String        @unique
+  nameEn     String        @map("name_en")
+  nameAr     String        @map("name_ar")
+  type       MealType
+  calories   Float
+  protein    Float
+  carbs      Float
+  fat        Float
+  fiber      Float
+  imageKey   String?       @map("image_key")
+  categoryId String?       @map("category_id")
+  category   FoodCategory? @relation(fields: [categoryId], references: [id])
+  createdAt  DateTime      @default(now()) @map("created_at")
+
+  orderMeals OrderMeal[]
+
+  @@map("meals")
+}
+
+model Order {
+  id                 String           @id @default(uuid())
+  subscriptionTypeId String           @map("subscription_type_id")
+  subscriptionType   SubscriptionType @relation(fields: [subscriptionTypeId], references: [id])
+  planId             String           @map("plan_id")
+  plan               Plan             @relation(fields: [planId], references: [id])
+  totalCalories      Float            @default(0) @map("total_calories")
+  totalProtein       Float            @default(0) @map("total_protein")
+  totalCarbs         Float            @default(0) @map("total_carbs")
+  totalFat           Float            @default(0) @map("total_fat")
+  createdAt          DateTime         @default(now()) @map("created_at")
+
+  meals OrderMeal[]
+
+  @@map("orders")
+}
+
+model OrderMeal {
+  id      String @id @default(uuid())
+  orderId String @map("order_id")
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  mealId  String @map("meal_id")
+  meal    Meal   @relation(fields: [mealId], references: [id])
+  day     Int    // 0=Sunday, 1=Monday, 2=Tuesday, 3=Wednesday, 4=Thursday
+  slot    Int    // 0=breakfast, 1=main1, 2=main2
+
+  @@unique([orderId, day, slot])
+  @@map("order_meals")
+}

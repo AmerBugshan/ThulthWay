@@ -1,0 +1,113 @@
+services:
+  # ── PostgreSQL Database ────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: tholth_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - tholth_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ── pgAdmin 4 ──────────────────────────────────────────────
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: tholth_pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - "${PGADMIN_PORT}:80"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - tholth_network
+
+  # ── RustFS (S3-compatible Object Storage) ──────────────────
+  rustfs:
+    image: rustfs/rustfs:latest
+    container_name: tholth_rustfs
+    restart: unless-stopped
+    command: >
+      --access-key ${RUSTFS_ACCESS_KEY}
+      --secret-key ${RUSTFS_SECRET_KEY}
+      --console-enable
+      /data
+    ports:
+      - "${RUSTFS_PORT}:9000"
+      - "${RUSTFS_CONSOLE_PORT}:9001"
+    volumes:
+      - rustfs_data:/data
+    networks:
+      - tholth_network
+    healthcheck:
+      test: ["CMD", "curl", "-s", "http://localhost:9000/"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 15s
+
+  # ── Backend API (Node.js / Express) ────────────────────────
+  api_server:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tholth_api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      API_PORT: ${API_PORT}
+      NODE_ENV: ${NODE_ENV}
+      RUSTFS_ENDPOINT: ${RUSTFS_ENDPOINT}
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY}
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY}
+      RUSTFS_BUCKET: ${RUSTFS_BUCKET}
+    ports:
+      - "${API_PORT}:${API_PORT}"
+    depends_on:
+      db:
+        condition: service_healthy
+      rustfs:
+        condition: service_healthy
+    networks:
+      - tholth_network
+
+  # ── Frontend (React) ───────────────────────────────────────
+  react_app:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        REACT_APP_API_URL: ${REACT_APP_API_URL}
+    container_name: tholth_frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT}:80"
+    depends_on:
+      - api_server
+    networks:
+      - tholth_network
+
+volumes:
+  pg_data:
+    name: tholth_pg_data
+  rustfs_data:
+    name: tholth_rustfs_data
+
+networks:
+  tholth_network:
+    name: tholth_network
+    driver: bridge
