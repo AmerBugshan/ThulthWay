@@ -42,4 +42,8 @@ async function findAll({ page = 1, limit = 20, subscriptionTypeId, dateFrom, dat
   };
 }
 
-module.exports = { findAll };
+async function remove(id) {
+  return prisma.order.delete({ where: { id } });
+}
+
+module.exports = { findAll, remove };

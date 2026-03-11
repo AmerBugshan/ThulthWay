@@ -5,4 +5,9 @@ async function list(req, res) {
   res.json(result);
 }
 
-module.exports = { list };
+async function remove(req, res) {
+  await adminOrderService.deleteOrder(req.params.id);
+  res.json({ success: true });
+}
+
+module.exports = { list, remove };

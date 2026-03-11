@@ -15,4 +15,8 @@ async function listOrders(query) {
   });
 }
 
-module.exports = { listOrders };
+async function deleteOrder(id) {
+  return adminOrderRepo.remove(id);
+}
+
+module.exports = { listOrders, deleteOrder };

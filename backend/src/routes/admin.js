@@ -36,5 +36,6 @@ router.delete("/meals/:id", asyncHandler(adminController.deleteMeal));
 
 // ── Orders ─────────────────────────────────────────────────
 router.get("/orders", asyncHandler(adminOrderController.list));
+router.delete("/orders/:id", asyncHandler(adminOrderController.remove));
 
 module.exports = router;
